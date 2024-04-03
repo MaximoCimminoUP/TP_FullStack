@@ -7,7 +7,7 @@ require('dotenv').config();
 const PORT = process.env.PORT; //|| 8050;
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = "mongodb+srv://cimminomaximo1:PVsujzr1VRRixMF9@cluster0.bwqyzg4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"; 
+const URI = process.env.URI; 
 //pasar uri al .env cuando este en casa
 
 
@@ -32,7 +32,7 @@ app.post("/", (req,res) =>{
 
 
 
-const client = new MongoClient(uri, {
+const client = new MongoClient(URI, {
     serverApi: {
       version: ServerApiVersion.v1,
       strict: true,
