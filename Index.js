@@ -7,17 +7,15 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const PORT = process.env.PORT || 8050;
 const URI = process.env.URI;
 
+const userRoutes = require('./routes/userRoutes');
+
+//Landing page route where 
 app.get("/", (req, res) => {
-    res.send("Welcome to the login screen"); // Placeholder message
+    res.send("Welcome to the login screen"); 
 });
 
 app.get("/home", (req, res) => {
     res.send("Hola");
-});
-
-app.get("/Categorias", (req, res) => {
-    
-    res.send("Categorias endpoint");
 });
 
 app.post("/try1", (req, res) => {
@@ -27,6 +25,9 @@ app.post("/try1", (req, res) => {
 http.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
+
+app.use('/user', userRoutes);
 
 const client = new MongoClient(URI, {
     serverApi: {
@@ -48,7 +49,7 @@ async function connectToMongoDB() {
 
 connectToMongoDB();
 
-// Optional: Handle process termination to close MongoDB connection
+//mongoDB connection signout
 process.on('SIGINT', async () => {
     try {
         await client.close();
