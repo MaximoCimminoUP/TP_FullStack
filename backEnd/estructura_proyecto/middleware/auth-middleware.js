@@ -1,4 +1,7 @@
 const jwt = require('jsonwebtoken');
+const express = require('express');
+const router = express.Router();
+
 function verifyToken(req, res, next) {
 const token = req.header('Authorization');
 if (!token) return res.status(401).json({ error: 'Access denied' });
@@ -13,9 +16,6 @@ try {
 
 module.exports = verifyToken;
 
-const express = require('express');
-const router = express.Router();
-const verifyToken = require('./authMiddleware');
 // Protected route
 router.get('/', verifyToken, (req, res) => {
 res.status(200).json({ message: 'Protected route accessed' });

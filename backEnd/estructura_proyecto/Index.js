@@ -7,9 +7,9 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const PORT = process.env.PORT || 8050;
 const URI = process.env.URI;
 
-const userRoutes = require('./routes/userRoutes');
+const userRoutes = require('./routes/userRoutesProfile');
 
-//Landing page route where 
+//Landing page route 
 app.get("/", (req, res) => {
     res.send("Welcome to the login screen"); 
 });
