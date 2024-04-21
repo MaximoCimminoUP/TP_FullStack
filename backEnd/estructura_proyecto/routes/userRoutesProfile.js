@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const verifyToken = require('../middleware/auth-Middleware');
+const verifyToken = require('../middleware/auth-middleware');
 const User = require('../models/user');
 const StuffedAnimal = require('../models/stuffedAnimal');
-const Order = require('../models/order');
 
 router.get('/profile', verifyToken, async (req, res) => {
     try {

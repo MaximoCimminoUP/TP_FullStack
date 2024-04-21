@@ -42,5 +42,6 @@ stuffedAnimalSchema.set('toJSON', {
 });
 
 
+
 const stuffedAnimal = mongoose.model('Plushy', stuffedAnimalSchema); 
 module.exports = stuffedAnimal;
