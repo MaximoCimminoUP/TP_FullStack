@@ -7,6 +7,8 @@ Este proyecto es una aplicación web full-stack desarrollada como proyecto para 
 Para instalar las dependencias del proyecto, ejecute:
 npm install
 
+Descargue el archivo .env e incluyalo en la root del archivo. 
+
 ## Uso
 Para iniciar el servidor, ejecuta:
 npm index.js
