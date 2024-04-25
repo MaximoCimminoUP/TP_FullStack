@@ -1,11 +1,13 @@
 const mongoose = require('mongoose');
+const { required } = require('yargs');
 const Schema = mongoose.Schema;
 
 const stuffedAnimalSchema = new Schema({
     id: {
-        type: Number, 
+        type: Number,  
         required: true,
-        unique: true 
+        index: {unique: true, dropDups: true} 
+       
     },
     species: {
         type: String,

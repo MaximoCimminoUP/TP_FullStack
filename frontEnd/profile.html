@@ -1,37 +1,51 @@
 <html>
-    <head>
-        <link rel="stylesheet" href="frontEnd\profile_Style.css">
-
-    </head>
-    <body>
-        <nav>
-            <ul>
-
-                <li>Product</li>
-                <li>Solutions</li>
-                <li>Open Source</li>
-            </ul>
-            <button>Sign up</button>
-        </nav>
-
-        <div class="container">
-
-            <div class="sidebar">
-                <img src="frontEnd\Argentinacampeon.jpg">
-                <h2>Cimmino</h2>
-                <button>follow</button>
-            </div>
+<head>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>        
+    <link rel="stylesheet" type="text/css" href="./CSS/profile_styles.css">
+    <script src="./js/index.js"></script> <!-- Close script tag properly -->
+</head>
+<body>
+    <nav>
+        <ul>
+            <li>Product</li>
+            <li>Solutions</li>
+            <li>Open Source</li>
+        </ul>
+        <button>Sign Up</button>
+    </nav>
+    <div class="container">
+        <div class="sidebar">
+            <img src="./Argentinacampeon.jpg" alt="Profile Picture"> <!-- Add alt attribute for accessibility -->
+            <h2>Simoooon</h2>
+            <button id="follow">Follow</button>
         </div>
-        
         <div class="content">
-           <h2> mis repos</h2>
-            <ul class="repos"> 
+            <h2>Mis repos</h2>
+            <button id="add">Nuevo Repo</button>
+            <ul class="repos">
                 <li>
-                    <h3>Repo 1</h3>
-                    <button>Public</button>
+                    <div>
+                        <h3>Repo 1</h3>
+                        <button>Public</button>
+                    </div>
+                    <p>Updated on Aug 7, 2023</p>
+                </li>
+                <li>
+                    <div>
+                        <h3>Repo 2</h3> <!-- Correct repo number -->
+                        <button >Public</button>
+                    </div>
+                    <p>Updated on Aug 7, 2023</p>
+                </li>
+                <li>
+                    <div>
+                        <h3>Repo 3</h3> <!-- Correct repo number -->
+                        <button>Public</button>
+                    </div>
                     <p>Updated on Aug 7, 2023</p>
                 </li>
             </ul>
         </div>
-    </body>
+    </div>
+</body>
 </html>

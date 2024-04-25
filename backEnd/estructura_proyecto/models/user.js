@@ -3,32 +3,24 @@ const Schema = mongoose.Schema;
 const usrSchema = new Schema({
 
 	email:{
-		type: String,
-		required:true,
-		index: {unique: true, dropDups: true}
+		type: String, required:true, index: {unique: true, dropDups: true}
 	},
-	name:{
-		type: String,
-		required:true
+	
+	name:{ type: String, required:true
     },
-    lastname:{
-		type: String,
-		required:true
+    
+	lastname:{ type: String, required:true
 	},
-	isActive:{
-		type: Boolean,
-		required:true,
-		default: true
+	
+	isActive:{ type: Boolean, required:true
 	},
-	roles:{
-		type: Array,
-		required:true,
-		default: ['user']
+	
+	roles:{ type: Array, required:true, default: ['user']
 	},
-	password:{
-		type: String,
-		required:true
-	}
+	
+	password:{ type: String, required:true
+	},
+
 	
 }, { timestamps: true } ).set('toJSON',{
     transform: (document, object) => {
@@ -39,5 +31,5 @@ const usrSchema = new Schema({
 });
 
 
-const users = mongoose.model('users',usrSchema);
-module.exports = users;
+const Users = mongoose.model('usr',usrSchema);
+module.exports = Users;
