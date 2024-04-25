@@ -1,0 +1,17 @@
+{
+  "name": "tp_fullstackweb",
+  "version": "1.0.0",
+  "description": "Tp Full stack",
+  "main": "Index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.3.2",
+    "nodemailer": "^6.9.13",
+    "yargs": "^17.7.2"
+  }
+}
