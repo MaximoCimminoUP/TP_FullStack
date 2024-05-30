@@ -6,8 +6,8 @@ require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const {login} = require('./backEnd/estructura_proyecto/controllers/auth.js');
 const { addStuffedAnimal, getAllStuffedAnimals, getStuffedAnimalById, editStuffedAnimal, deleteStuffedAnimal } = require("./backEnd/estructura_proyecto/controllers/stuffedAnimal");
-
-
+const StuffedAnimal = require('./backEnd/estructura_proyecto/models/stuffedAnimal.js');
+const verifyToken = require('./backEnd/estructura_proyecto/middleware/auth-middleware.js');
 const PORT = process.env.PORT || 8050;
 const URI = process.env.URI;
 
@@ -29,7 +29,7 @@ mongoose.connect(URI, {})
 
 //Landing page route 
 app.get("/", (req, res) => {
-    res.send("Welcome to the webpage"); 
+    
 });
 
 app.get("/home", (req, res) => {
@@ -56,6 +56,7 @@ http.listen(PORT, () => {
 });
 
 app.post('/login', async (req, res) => {
+    
     const { email, password } = req.body;
 
     try {
@@ -149,5 +150,26 @@ app.delete('/stuffedAnimals/:id', async (req, res) => {
     }
 });
 
+app.get('/StuffedAnimalRank', async (req, res) => {
+    try {
+        const plushieRanking = await Sales.aggregate([
+            { $group: { _id: '$productId', totalSold: { $sum: '$quantity' } } },
+            { $sort: { totalSold: -1 } }
+        ]);
+        res.status(200).json({ plushieRanking });
+    } catch (error) {
+        console.error('Error fetching plushie ranking:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+app.get('/UserStuffedAnimals', verifyToken, async (req, res) => {
+    try {
+        const myPlushies = await StuffedAnimal.find({ userId: req.userId });
+        res.status(200).json({ myPlushies });
+    } catch (error) {
+        console.error('Error fetching my plushies:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 app.use('/user', userRoutes);
 
