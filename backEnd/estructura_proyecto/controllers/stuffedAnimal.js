@@ -1,70 +1,61 @@
-const StuffedAnimal = require('../models/stuffedAnimal');
+const Pokemon = require('../models/stuffedAnimal');
 
-const addStuffedAnimal = async (id, species, model, coloursAvailable, stock) => {
+const addPokemon = async (name, evolutions, image, shinyImage, accessories, stock) => {
     try {
-        const stuffedAnimal = new StuffedAnimal({
-            id,
-            species,
-            model,
-            coloursAvailable,
+        const pokemon = new Pokemon({
+            name,
+            evolutions,
+            image,
+            shinyImage,
+            accessories,
             stock
         });
-        const savedStuffedAnimal = await stuffedAnimal.save();
-        return savedStuffedAnimal;
+        const savedPokemon = await pokemon.save();
+        return savedPokemon;
     } catch (error) {
-        console.error('Error adding stuffed animal:', error);
+        console.error('Error adding Pokémon:', error);
         throw error;
     }
 };
 
-
-const getAllStuffedAnimals = async (limit, offset) => {
+const getAllPokemons = async (limit, offset) => {
     try {
-        const stuffedAnimals = await StuffedAnimal.find({}).limit(limit).skip(offset);
-        return stuffedAnimals;
+        const pokemons = await Pokemon.find({}).limit(limit).skip(offset);
+        return pokemons;
     } catch (error) {
-        console.error('Error getting all stuffed animals:', error);
+        console.error('Error getting all Pokémon:', error);
         throw error;
     }
 };
 
-
-
-const getStuffedAnimalById = async (id) => {
+const getPokemonById = async (id) => {
     try {
-        
-        const stuffedAnimal = await StuffedAnimal.findOne({id: id});
-        return stuffedAnimal;
+        const pokemon = await Pokemon.findById(id);
+        return pokemon;
     } catch (error) {
-        console.error('Error getting stuffed animal by ID:', error);
+        console.error('Error getting Pokémon by ID:', error);
         throw error;
     }
 };
 
-const editStuffedAnimal = async (stuffedAnimal) => {
+const editPokemon = async (id, updatedPokemon) => {
     try {
-        
-        const updatedStuffedAnimal = await StuffedAnimal.findOneAndUpdate(
-            { id: stuffedAnimal.id }, // Filters to find the stuffed animal by its ID
-            stuffedAnimal, // Data to update
-            { new: true } // Returns the modified document rather than the original
-        );
-        
-        return updatedStuffedAnimal;
+        const editedPokemon = await Pokemon.findByIdAndUpdate(id, updatedPokemon, { new: true });
+        return editedPokemon;
     } catch (error) {
-        console.error('Error editing stuffed animal:', error);
+        console.error('Error editing Pokémon:', error);
         throw error;
     }
 };
 
-const deleteStuffedAnimal = async (id) => {
+const deletePokemon = async (id) => {
     try {
-        const deletedStuffedAnimal = await StuffedAnimal.findOneAndDelete({id: id});
-        return deletedStuffedAnimal;
+        const deletedPokemon = await Pokemon.findByIdAndDelete(id);
+        return deletedPokemon;
     } catch (error) {
-        console.error('Error deleting stuffed animal:', error);
+        console.error('Error deleting Pokémon:', error);
         throw error;
     }
 };
 
-module.exports = { addStuffedAnimal, getAllStuffedAnimals, getStuffedAnimalById, editStuffedAnimal, deleteStuffedAnimal };
+module.exports = { addPokemon, getAllPokemons, getPokemonById, editPokemon, deletePokemon };

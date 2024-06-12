@@ -1,22 +1,24 @@
 const mongoose = require('mongoose');
 
-const cartSchema = new mongoose.Schema({
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    productId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
-        required: true
+const cartItemSchema = new mongoose.Schema({
+    pokemonName: {
+        type: String, 
+        ref: 'Pokemon',
+        required: false
     },
     quantity: {
         type: Number,
-        required: true,
-        default: 1 // Default quantity is 1
+        required: false,
+        default: 1
     }
-    
+});
+
+const cartSchema = new mongoose.Schema({
+    email: {
+        type: String,
+        required: true
+    },
+    items: [cartItemSchema]
 });
 
 const Cart = mongoose.model('Cart', cartSchema);

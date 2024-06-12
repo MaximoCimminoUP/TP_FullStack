@@ -4,27 +4,30 @@ const app = express();
 const http = require("http").createServer(app);
 require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const {login} = require('./backEnd/estructura_proyecto/controllers/auth.js');
-const { addStuffedAnimal, getAllStuffedAnimals, getStuffedAnimalById, editStuffedAnimal, deleteStuffedAnimal } = require("./backEnd/estructura_proyecto/controllers/stuffedAnimal");
-const StuffedAnimal = require('./backEnd/estructura_proyecto/models/stuffedAnimal.js');
+const { login } = require('./backEnd/estructura_proyecto/controllers/auth.js');
+const { addPokemon, getAllPokemons, getPokemonById, editPokemon, deletePokemon } = require("./backEnd/estructura_proyecto/controllers/stuffedAnimal");
+const Pokemon = require('./backEnd/estructura_proyecto/models/stuffedAnimal.js');
+const Purchases = require('./backEnd/estructura_proyecto/models/purchases.js');
 const verifyToken = require('./backEnd/estructura_proyecto/middleware/auth-middleware.js');
 const PORT = process.env.PORT || 8050;
 const URI = process.env.URI;
-
-app.use(express.json());
-
+app.use(express.json()); 
+const { addUser } = require('./backEnd/estructura_proyecto/controllers/user');
+const cors = require('cors');
+const Cart = require('./backEnd/estructura_proyecto/models/cart.js');
+app.use(cors());
 const userRoutes = require('./backEnd/estructura_proyecto/routes/userRoutesProfile.js');
-const { addUser }  = require('./backEnd/estructura_proyecto/controllers/user');
-
-
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
+app.use('/Api', userRoutes);
 
 mongoose.connect(URI, {})
 .then(() =>
     {
         console.log("MongoDB connected");
     }).catch((err) => console.log(err));
+
+
 
 
 //Landing page route 
@@ -39,11 +42,19 @@ app.post('/register', async (req, res) => {
     try {
         const { email, name, lastname, isActive, roles, password } = req.body;
         const result = await addUser(email, name, lastname, isActive, roles, password);
+        tempEmail = email;
         if (result) {
             res.status(200).json({ message: 'User added successfully', user: result });
         } else {
             res.status(400).json({ error: 'User already exists' });
         }
+        const newCart = new Cart({
+           email: tempEmail,
+        });
+
+        // Save the cart
+        await newCart.save();
+
     } catch (error) {
         console.error('Error adding user:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -66,6 +77,17 @@ app.post('/login', async (req, res) => {
         if (token) {
             // Login successful, send JWT token in response
             res.status(200).json({ token });
+            
+            let cart = await Cart.findOne({ userId: user._id });
+
+        // If user doesn't have a cart, create a new one
+        if (!cart) {
+            cart = new Cart({
+                userId: user._id,
+                items: []
+            });
+            await cart.save();
+        }
         } else {
             // Login failed, send appropriate error response
             res.status(401).json({ error: 'Invalid credentials' });
@@ -78,98 +100,128 @@ app.post('/login', async (req, res) => {
 });
 
 
-//adds new products
 app.post('/stock', async (req, res) => {
-    try{
-        const { id, species, model, coloursAvailable, stock} = req.body;
-        const result = await addStuffedAnimal(id, species, model, coloursAvailable, stock);
-        console.log("no me mori ");
-        if (result) {
-            res.status(200).json({ message: 'Stuffed Animal added successfully'});
-            console.log("no me mori 1 ");
+    try {
+        const { name, evolutions, image, shinyImage, accessories, stock } = req.body;
+        
+        const newPokemon = new Pokemon({ 
+            name, 
+            evolutions, 
+            image, 
+            shinyImage,
+            accessories,
+            stock 
+        });
+        
+        await newPokemon.save();
+        
+        res.status(200).json({ message: 'Pokémon stuffed animal added successfully' });
+    } catch (error) {
+        if (error.code === 11000) { // Duplicate key error
+            res.status(400).json({ error: 'Pokémon stuffed animal already exists' });
         } else {
-            res.status(400).json({ error: 'Stuffed Animal already exists' });
-            console.log("no me mori 2 ");
+            console.error('Error adding Pokémon:', error);
+            res.status(500).json({ error: 'Internal server error' });
         }
-    } catch (error) {
-        console.error('Error adding stock:', error);
-        res.status(500).json({ error: 'Internal server error' });
     }
 });
-//shows all available products
-app.get('/shop', async (req, res) => {
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = parseInt(req.query.offset) || 0;
+app.get('/pokemon', async (req, res) => {
     try {
-        const stuffedAnimals = await getAllStuffedAnimals(limit, offset);
-        res.status(200).json(stuffedAnimals);
+        let pokemons = await Pokemon.find({}, '-_id -createdAt -updatedAt -__v')
+        .populate({
+          path: 'accessories',
+          select: '-_id name image' // Excluding _id field from accessories
+        })
+        .lean(); // Convert to plain JavaScript objects
+       
+        pokemons = pokemons.map(pokemon => {
+            if (pokemon.accessories) {
+              pokemon.accessories = pokemon.accessories.map(accessory => {
+                delete accessory._id;
+                return accessory;
+              });
+            }
+            return pokemon;
+          });
+          
+      res.json(pokemons);
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
+      console.error('Error fetching Pokémon data:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
-});
+  });
 
-// Endpoint to find the plush by id
-app.get('/stuffedAnimals/:id', async (req, res) => {
+// Endpoint to show Pokémon stuffed animals by ID
+app.get('/pokemon/:id', async (req, res) => {
     const id = req.params.id;
-    console.log(id);
     try {
-        const stuffedAnimal = await getStuffedAnimalById(id);
-        if (!stuffedAnimal) {
-            return res.status(404).json({ error: 'Stuffed animal not found' });
+        const pokemon = await Pokemon.findById(id);
+        if (!pokemon) {
+            return res.status(404).json({ error: 'Pokémon stuffed animal not found' });
         }
-        return res.status(200).json(stuffedAnimal);
+        
+        return res.status(200).json(pokemon);
     } catch (error) {
-        console.error('Error getting stuffed animal by ID:', error);
+        console.error('Error getting Pokémon by ID:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// Endpoint to edit the plush with id
-app.put('/stuffedAnimals/:id', async (req, res) => {
+// Endpoint to edit the Pokémon stuffed animal by ID
+app.put('/pokemon/:id', async (req, res) => {
     const id = req.params.id;
-    console.log(id);
-    const updatedStuffedAnimal = req.body;
-    updatedStuffedAnimal._id = id; // Make sure the _id matches the ID in the URL
+    const updatedPokemon = req.body;
     try {
-        const result = await editStuffedAnimal(updatedStuffedAnimal);
-        res.status(200).json({ message: 'Stuffed animal updated successfully', stuffedAnimal: result });
+        const result = await Pokemon.findByIdAndUpdate(id, updatedPokemon, { new: true });
+        if (!result) {
+            return res.status(404).json({ error: 'Pokémon stuffed animal not found' });
+        }
+        res.status(200).json({ message: 'Pokémon stuffed animal updated successfully', pokemon: result });
     } catch (error) {
+        console.error('Error updating Pokémon:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// Endpoint to delete a plush
-app.delete('/stuffedAnimals/:id', async (req, res) => {
+// Endpoint to delete a Pokémon stuffed animal by ID
+app.delete('/pokemon/:id', async (req, res) => {
     const id = req.params.id;
-    console.log(id);
     try {
-        const result = await deleteStuffedAnimal(id);
-        res.status(200).json({ message: 'Stuffed animal deleted successfully', stuffedAnimal: result });
+        const result = await Pokemon.findByIdAndDelete(id);
+        if (!result) {
+            return res.status(404).json({ error: 'Pokémon stuffed animal not found' });
+        }
+        res.status(200).json({ message: 'Pokémon stuffed animal deleted successfully', pokemon: result });
     } catch (error) {
+        console.error('Error deleting Pokémon:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-app.get('/StuffedAnimalRank', async (req, res) => {
+// Endpoint to get the ranking of Pokémon based on purchases
+app.get('/PokemonRank', async (req, res) => {
     try {
-        const plushieRanking = await Sales.aggregate([
+        const pokemonRanking = await Purchases.aggregate([
             { $group: { _id: '$productId', totalSold: { $sum: '$quantity' } } },
             { $sort: { totalSold: -1 } }
         ]);
-        res.status(200).json({ plushieRanking });
+        res.status(200).json({ pokemonRanking });
     } catch (error) {
-        console.error('Error fetching plushie ranking:', error);
+        console.error('Error fetching Pokémon ranking:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-app.get('/UserStuffedAnimals', verifyToken, async (req, res) => {
-    try {
-        const myPlushies = await StuffedAnimal.find({ userId: req.userId });
-        res.status(200).json({ myPlushies });
-    } catch (error) {
-        console.error('Error fetching my plushies:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-app.use('/user', userRoutes);
 
+// Endpoint to get all Pokémon stuffed animals owned by a user
+app.get('/UserPokemons', verifyToken, async (req, res) => {
+    try {
+        const myPokemons = await Purchases.find({ userId: req.userId }).populate('productId');
+        res.status(200).json({ myPokemons });
+    } catch (error) {
+        console.error('Error fetching user Pokémons:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+module.exports = app;

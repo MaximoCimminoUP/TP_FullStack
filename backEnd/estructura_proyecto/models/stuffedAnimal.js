@@ -1,49 +1,57 @@
 const mongoose = require('mongoose');
-const { required } = require('yargs');
 const Schema = mongoose.Schema;
 
-const stuffedAnimalSchema = new Schema({
-    id: {
-        type: Number,  
+const pokemonSchema = new Schema({
+    name: {
+        type: String,
         required: true,
-        index: {unique: true, dropDups: true} 
-       
+        unique: true, 
+        index: { unique: true, dropDups: true }
     },
-    species: {
+    evolutions: {
+        type: [String],
+        required: true,
+        validate: {
+            validator: function (value) {
+                return Array.isArray(value); 
+            },
+            message: 'Evolutions should be an array of strings'
+        }
+    },
+    image: {
         type: String,
         required: true
     },
-    model: {
-        type: String,
-        required: true
+    shinyImage: {
+        type: String
     },
-    coloursAvailable: {
-        type: [String], 
+    accessories: {
+        type: [{
+            name: String,
+            image: String
+        }],
         required: true,
-		validate: {
-			validator: function(value)
-			{
-				return value.length >0; 
-			},
-			message: 'At least one colour needs to be selected'
-		}
+        validate: {
+            validator: function (value) {
+                return value.length >= 0; 
+            },
+            message: 'Accessories cannot be less than 0'
+        }
     },
     stock: {
-        type: Number, 
-        required: true
+        type: Number,
+        required: true,
+        min: [0, 'Stock cannot be negative']
     }
 }, { timestamps: true });
 
-
-stuffedAnimalSchema.set('toJSON', {
+pokemonSchema.set('toJSON', {
     transform: (document, object) => {
-        object.id = document.id;
-        delete object._id; 
-        delete object.__v; 
+        object.id = document._id;
+        delete object._id;
+        delete object.__v;
     }
 });
 
-
-
-const stuffedAnimal = mongoose.model('Plushy', stuffedAnimalSchema); 
-module.exports = stuffedAnimal;
+const Pokemon = mongoose.model('Pokemon', pokemonSchema);
+module.exports = Pokemon;

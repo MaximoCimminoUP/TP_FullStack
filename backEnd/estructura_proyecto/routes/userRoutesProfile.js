@@ -1,10 +1,16 @@
 const express = require('express');
-const router = express.Router();
+const router = express.Router(); // Create a new router instance
+
 const verifyToken = require('../middleware/auth-middleware');
 const User = require('../models/user');
-const StuffedAnimal = require('../models/stuffedAnimal');
-const Cart = require('../models/cart')
-const Purchase = require("../models/purchases")
+const Pokemon = require('../models/stuffedAnimal');
+const Cart = require('../models/cart');
+const Purchases = require('../models/purchases');
+const bodyParser = require('body-parser');
+
+router.use(bodyParser.json());
+router.use(bodyParser.urlencoded({ extended: true }));
+
 router.get('/profile', verifyToken, async (req, res) => {
     try {
         // Fetches user details using userId extracted from JWT token
@@ -23,74 +29,64 @@ router.get('/profile', verifyToken, async (req, res) => {
     }
 });
 
-
-router.post('/customize-stuffedAnimal', verifyToken, async (req, res) => {
+router.post('/customize-pokemon', verifyToken, async (req, res) => {
     try {
-        const {type, colors, accessories } = req.body;
+        const { type, colors, accessories } = req.body;
 
-        // creates new custom plush
-        const newStuffedAnimal = new StuffedAnimal({
-            
-            userId: req.userId, //takes user
-            type,
-            colors,
+        // Creates a new custom Pokemon
+        const newPokemon = new Pokemon({
+            userId: req.userId, 
+            name: type, // Assuming 'type' represents the Pokemon name
+            evolutions: [], 
+            image: '', // Image URL for the Pokemon
             accessories,
-            stock: 1 // assumes that once created, you will order 1. So it creates a single stock item for i.
+            stock: 1 // Assumes that once created, you will order 1. So it creates a single stock item for it.
         });
 
-        const savedStuffedAnimal = await newStuffedAnimal.save();
+        const savedPokemon = await newPokemon.save();
 
-        let cart = await Cart.findOne({ userId: req.userId });
+        let cart = await Cart.findOne({ email: req.email });
 
         // If user doesn't have a cart, it creates a new one
         if (!cart) {
             cart = new Cart({
-                userId: req.userId,
-                items: [] // Initializes an empty array of cart items
+                email: req.email,
+                 
             });
         }
 
-        // Adds the new stuffed animal to the user's cart
-        cart.items.push({ productId: savedStuffedAnimal._id, quantity: 1 });
+        // Adds the new Pokemon to the user's cart
+        cart.items.push({ productId: savedPokemon._id, quantity: 1 });
 
         // Saves the updated cart
         await cart.save();
-        res.status(200).json({ message: 'Plushie customized successfully', plushie: savedStuffedAnimal});
+        res.status(200).json({ message: 'Pokemon customized successfully', pokemon: savedPokemon });
     } catch (error) {
-        console.error('Error customizing stuffed animal:', error);
+        console.error('Error customizing Pokemon:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-router.get('/stuffedAnimal-ranking', async (req, res) => {
+router.get('/pokemon-ranking', async (req, res) => {
     try {
-        // Adds orders to count the number of orders for each plushie type
-        const stuffedAnimalOrders = await Order.aggregate([
-            { $group: { _id: '$stuffedAnimalType', count: { $sum: 1 } } },
+        // Adds orders to count the number of orders for each Pokemon type
+        const pokemonOrders = await Purchases.aggregate([
+            { $group: { _id: '$productId', count: { $sum: 1 } } },
             { $sort: { count: -1 } }
         ]);
 
-        res.status(200).json({ plushieRanking: plushieOrders });
+        res.status(200).json({ pokemonRanking: pokemonOrders });
     } catch (error) {
-        console.error('Error fetching stuffed animal ranking:', error);
+        console.error('Error fetching Pokemon ranking:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-
-router.delete('/plushie/:plushieId', verifyToken, async (req, res) => {
-    try {
-        const plushieId = req.params.stuffedAnimalId;
-        await StuffedAnimal.findByIdAndDelete(plushieId);
-        res.status(200).json({ message: 'Plushie deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting plushie:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
 router.get('/cart', verifyToken, async (req, res) => {
     try {
-        const cart = await Cart.findOne({ userId: req.userId });
+        const { email } = req.body; // Extract email from request body
+
+        const cart = await Cart.findOne({ email });
+        console.log(email);
         if (!cart) {
             return res.status(404).json({ error: 'Cart not found' });
         }
@@ -101,22 +97,42 @@ router.get('/cart', verifyToken, async (req, res) => {
     }
 });
 
-router.post('/cart/add', verifyToken, async (req, res) => {
-    try {
-        const { productId, quantity } = req.body;
-        let cart = await Cart.findOne({ userId: req.userId });
+router.post('/cart/add', async (req, res) => {
+    try { 
+        console.log('POST /cart/add');
+        console.log('Request Body:', req.body); // Print the entire request body
+
+        const { email, pokemonName, quantity } = req.body; // Extract email from req.body
+
+        console.log('paso 1');
+        const pokemon = await Pokemon.findOne({ name: pokemonName });
+        if (!pokemon) {
+            console.log('Pokemon not found:', pokemonName);
+            return res.status(404).json({ error: 'Pokemon not found' });
+        }  
+        console.log('Found Pokemon:', pokemon);
+
+        let cart = await Cart.findOne({ email: email }); // Use extracted email
+        console.log('paso 3');
         if (!cart) {
+            console.log('Creating new cart for email:', email);
             cart = new Cart({
-                userId: req.userId,
-                items: []
+                email: email,
+                items: [] // Initialize items array
             });
+        } else {
+            console.log('Found existing cart for email:', email);
+            if (!Array.isArray(cart.items)) {
+                cart.items = []; // Ensure items is an array
+            }
         }
-   
-        const existingItem = cart.items.find(item => item.productId === productId);
+
+        console.log('paso 4');
+        const existingItem = cart.items.find(item => item.pokemonName === pokemonName);
         if (existingItem) {
             existingItem.quantity += quantity;
         } else {
-            cart.items.push({ productId, quantity });
+            cart.items.push({ pokemonName: pokemonName, quantity });
         }
         await cart.save();
         res.status(200).json(cart);
@@ -126,16 +142,17 @@ router.post('/cart/add', verifyToken, async (req, res) => {
     }
 });
 
-
-router.delete('/cart/remove/:productId', verifyToken, async (req, res) => {
+router.delete('/cart/remove/:pokemonName', verifyToken, async (req, res) => {
     try {
-        const productId = req.params.productId;
-        let cart = await Cart.findOne({ userId: req.userId });
+        const pokemonName = req.params.pokemonName;
+        const email = req.user.email;
+
+        let cart = await Cart.findOne({ email: email });
         if (!cart) {
             return res.status(404).json({ error: 'Cart not found' });
         }
         // Removes the item from the cart
-        cart.items = cart.items.filter(item => item.productId !== productId);
+        cart.items = cart.items.filter(item => item.pokemonName !== pokemonName);
         await cart.save();
         res.status(200).json(cart);
     } catch (error) {
@@ -144,16 +161,35 @@ router.delete('/cart/remove/:productId', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/purchases', async (req, res) => {
+router.post('/purchase', verifyToken, async (req, res) => {
     try {
-      // Fetches purchase history from the database
-      const purchases = await Purchase.find({ userId: req.user.id }).populate('stuffedAnimal');
-  
-      // Sends the purchases as a response
-      res.json(purchases);
+        const { cartItems } = req.body;
+        const userId = req.userId;
+
+        for (const item of cartItems) {
+            const purchase = new Purchases({
+                userId,
+                productId: item.productId,
+                quantity: item.quantity
+            });
+            await purchase.save();
+        }
+
+        res.status(200).json({ message: 'Purchase successful!' });
     } catch (error) {
-      console.error('Error fetching purchases:', error);
-      res.status(500).json({ error: 'Internal server error' });
+        console.error('Error during purchase:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
-  });
+});
+
+router.get('/purchases', verifyToken, async (req, res) => {
+    try {
+        const purchases = await Purchases.find({ userId: req.userId }).populate('stuffedAnimal');
+        res.json(purchases);
+    } catch (error) {
+        console.error('Error fetching purchases:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 module.exports = router;     
