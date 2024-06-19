@@ -1,7 +1,7 @@
 require('mongoose');
 const Users = require('../models/user');
-
-
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
+const jwt = require('jsonwebtoken');
 const addUser = async (email,name,lastname,isActive,roles, password) => {
 
     // let existUser = await Usr.findOne({ email: email });
@@ -25,7 +25,7 @@ const addUser = async (email,name,lastname,isActive,roles, password) => {
          let user = await usr.save(); 
          console.log("usuario nuevo");
          console.log(user);
-         return { user }; 
+         return  user ; 
  
      }else{
          return false;

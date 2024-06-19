@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { boolean } = require('yargs');
 const Schema = mongoose.Schema;
 
 const pokemonSchema = new Schema({
@@ -25,6 +26,9 @@ const pokemonSchema = new Schema({
     shinyImage: {
         type: String
     },
+    isShiny: {
+        type: Boolean
+    },
     accessories: {
         type: [{
             name: String,
@@ -38,10 +42,10 @@ const pokemonSchema = new Schema({
             message: 'Accessories cannot be less than 0'
         }
     },
-    stock: {
-        type: Number,
+    isBaseEvolution: {
+        type: Boolean,
         required: true,
-        min: [0, 'Stock cannot be negative']
+        default: true
     }
 }, { timestamps: true });
 

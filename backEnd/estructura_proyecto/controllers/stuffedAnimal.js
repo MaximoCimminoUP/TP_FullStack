@@ -8,7 +8,8 @@ const addPokemon = async (name, evolutions, image, shinyImage, accessories, stoc
             image,
             shinyImage,
             accessories,
-            stock
+            stock,
+            isBaseEvolution
         });
         const savedPokemon = await pokemon.save();
         return savedPokemon;
@@ -19,13 +20,9 @@ const addPokemon = async (name, evolutions, image, shinyImage, accessories, stoc
 };
 
 const getAllPokemons = async (limit, offset) => {
-    try {
-        const pokemons = await Pokemon.find({}).limit(limit).skip(offset);
+        const pokemons = await Pokemon.find({ isBaseEvolution: true }).limit(limit).skip(offset);
         return pokemons;
-    } catch (error) {
-        console.error('Error getting all Pokémon:', error);
-        throw error;
-    }
+   
 };
 
 const getPokemonById = async (id) => {
