@@ -64,7 +64,7 @@ app.post('/register', async (req, res) => {
          console.log('Found cart with userId:', cart ? cart.userId : 'None');
         
         if (!cart) {
-            newCart(userId);
+            newCart(user._Id);
             console.log('New cart saved:', cart);
         }
 
@@ -202,14 +202,13 @@ app.delete('/pokemon/:id', async (req, res) => {
 // Endpoint to get the ranking of Pokémon based on purchases
 app.get('/PokemonRank', async (req, res) => {
     try {
-        const pokemonRanking = getMostPopular();
-        res.status(200).json({ pokemonRanking });
+      const pokemonRanking = await getMostPopular();
+      res.status(200).json({ pokemonRanking });
     } catch (error) {
-        console.error('Error fetching Pokémon ranking:', error);
-        res.status(500).json({ error: 'Internal server error' });
+      console.error('Error fetching Pokémon ranking:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
-});
-
+  });
 
 
 module.exports = app;

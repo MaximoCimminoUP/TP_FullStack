@@ -4,8 +4,8 @@ const purchaseItemSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true, 
-        index: { unique: true, dropDups: true }
     },
+
     evolutions: {
         type: [String],
         required: true,
@@ -61,7 +61,6 @@ const purchasesSchema = new mongoose.Schema({
    
 });
 
-purchasesSchema.index({ userId: 1, 'items.name': 1, 'items.isShiny': 1 });
 
 const Purchases = mongoose.model('Purchases', purchasesSchema);
 

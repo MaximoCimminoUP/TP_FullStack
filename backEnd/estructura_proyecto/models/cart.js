@@ -5,7 +5,7 @@ const cartItemSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true, 
-        index: { unique: true, dropDups: true }
+        index: { dropDups: true }
     },
     evolutions: {
         type: [String],
