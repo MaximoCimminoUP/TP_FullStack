@@ -10,7 +10,9 @@ npm install
 Crear un archivo .env y agregarlo en la root del proyecto. Sus contenidos son:
 
 PORT = 8080
+
 URI = "mongodb+srv://cimminomaximo1:xI4guBeoxfr8Vwke@cluster0.bwqyzg4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+
 JWT_SECRET_KEY= "#JWT_SECRET_KEY123#"
 
 ## Uso
