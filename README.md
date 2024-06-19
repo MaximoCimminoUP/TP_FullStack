@@ -7,7 +7,11 @@ Este proyecto es una aplicación web full-stack desarrollada como proyecto para 
 Para instalar las dependencias del proyecto, ejecute:
 npm install
 
-Descargue el archivo .env e incluyalo en la root del archivo. 
+Crear un archivo .env y agregarlo en la root del proyecto. Sus contenidos son:
+
+PORT = 8080
+URI = "mongodb+srv://cimminomaximo1:xI4guBeoxfr8Vwke@cluster0.bwqyzg4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+JWT_SECRET_KEY= "#JWT_SECRET_KEY123#"
 
 ## Uso
 Para iniciar el servidor, ejecuta:
